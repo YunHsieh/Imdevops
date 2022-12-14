@@ -1,0 +1,44 @@
+# docker compose for local testing
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    env_file: dev.env
+    networks:
+      - backend-tier
+    volumes:
+      - ./:/imbee
+    depends_on:
+      - db
+    ports:
+    - 8000:8000
+
+  db:
+    image: mysql:8.0.28
+    restart: unless-stopped
+    platform: linux/amd64
+    networks:
+      - backend-tier
+    volumes:
+      - backstage-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=dev
+      - MYSQL_PASSWORD=dev
+      - MYSQL_DATABASE=dev
+    ports:
+      - 3306:3306
+
+volumes:
+  backstage-db:
+    driver: local
+  backstage-redis:
+    driver: local
+
+networks:
+  backend-tier:
+    driver: bridge
