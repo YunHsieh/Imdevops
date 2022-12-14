@@ -1,5 +1,5 @@
 output "rds_endpoint" {
-    value = "${aws_db_instance.default.endpoint}"
+    value = "${aws_db_instance.imbee_db.endpoint}"
 }
 
 output "ecr_url" {
