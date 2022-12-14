@@ -1,0 +1,127 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: imbee-image-services
+# get local environment variables
+
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+plugins:
+  - serverless-deployment-bucket
+  - serverless-plugin-warmup
+
+package:
+  individually: true
+  patterns:
+     - '**'
+
+
+provider:
+  name: aws
+  stage: ${env:STAGE, 'dev'}
+  deploymentBucket:
+    name: 'imbee-notification'
+  region: ap-northeast-1
+  architecture: arm64
+  runtime: python3.9
+  timeout: 30
+
+functions:
+  imbee:
+    image: ${ssm:/imbee/infra/notification-ecr}:latest
+    architecture: arm64
+
+    environment:
+      APP_NAME: 'imbee-image-services'
+      DATABASE_URL: ${ssm:/imbee/infra/database-url}
+      DATABASE_NAME: ${ssm:/imbee/infra/database-name}
+      DATABASE_PASSWORD: ${ssm:/imbee/infra/database-password}
+      DATABASE_USERNAME: ${ssm:/imbee/infra/database-username}
+    # reservedConcurrency: 5
+    vpc:
+      securityGroupIds:
+        - ${ssm:/imbee/infra/security_group_id}
+      subnetIds:
+        - ${ssm:/imbee/infra/subnet-1}
+        - ${ssm:/imbee/infra/subnet-2}
+        - ${ssm:/imbee/infra/subnet-3}
+
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - ImbeeNotificationFcmFifo
+              - Arn
+          batchSize: 1
+
+resources:
+  Resources:
+    ImbeeNotificationFcmFifoDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: 'imbee-notification-fcm-dlq.fifo'
+        FifoQueue: True
+        Tags:
+          -
+            Key: "name"
+            Value: "notification"
+
+    ImbeeNotificationFcmFifo:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: 'imbee-notification-fcm.fifo'
+        FifoQueue: True
+        ContentBasedDeduplication: True
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+            - ImbeeNotificationFcmFifoDLQ
+            - Arn
+          maxReceiveCount: 10
+        Tags:
+          -
+            Key: "name"
+            Value: "notification"
+
+    ImbeeNotificationDoneFifoDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: 'imbee-notification-done-fcm-dlq.fifo'
+        FifoQueue: True
+        Tags:
+          -
+            Key: "name"
+            Value: "notification"
+
+    ImbeeNotificationDoneFifo:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: 'imbee-notification-done-fcm.fifo'
+        FifoQueue: True
+        ContentBasedDeduplication: True
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+            - ImbeeNotificationDoneFifoDLQ
+            - Arn
+          maxReceiveCount: 10
+        Tags:
+          -
+            Key: "name"
+            Value: "notification"
