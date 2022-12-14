@@ -7,12 +7,18 @@ I used tools as the below:
 
 System recommand MacOS
 ## Prerequisite
+- [awscliv2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [npm](https://nodejs.org/en/download/)
+- [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 ```
 npm install -g serverless
 ```
 
 Start the project
 ```
+. ./.env
 terraform init
 terraform apply
+
+. ./.env
 ```
