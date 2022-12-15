@@ -74,26 +74,24 @@ def mock_firebase(event, context):
         'timeout': timeout_response,
         'excced': message_exceed_response
     }
-
-    asyncio.run(
-        with_connect(
-            save_message, 
-            {
-                'rep': mock_response.get(event.get('status', ''), success_response)()
-            }
-        )
-    )
+    status = event.get('status', 'success')
+    asyncio.run(with_connect(
+        save_message, 
+        {
+            'rep': mock_response.get(status)()
+        }
+    ))
     try:
         response = sqs.send_message(
             QueueUrl=SQS_NOTIFICATION_DONE_URL,
             MessageBody=json.dumps({
                 'status_text': 'success',
             }),
+            MessageDeduplicationId=context.aws_request_id,
+            MessageGroupId='imbee',
         )
     except ClientError as e:
-        print("Unexpected error: %s" % e)
+        print(f'Unexpected error: {e}')
     return {
         'message_id': response['MessageId']
     }
-
-mock_firebase({'status': 'success'}, {})
