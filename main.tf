@@ -14,70 +14,6 @@ provider "aws" {
     profile    = "default"
 }
 
-# Create a VPC
-resource "aws_vpc" "myvpc" {
-    cidr_block = "10.0.0.0/16"
-    enable_dns_hostnames = true
-    enable_dns_support   = true
-}
-
-
-resource "aws_internet_gateway" "_" {
-  vpc_id = aws_vpc.myvpc.id
-}
-
-
-resource "aws_subnet" "ap-northeast-1a" {
-    vpc_id            = aws_vpc.myvpc.id
-    map_public_ip_on_launch = true
-    availability_zone = "ap-northeast-1a"
-    cidr_block        = "10.0.1.0/24"
-
-    tags = {
-        AZ = "1a"
-    }
-}
-
-
-resource "aws_subnet" "ap-northeast-1c" {
-    vpc_id            = aws_vpc.myvpc.id
-    map_public_ip_on_launch = true
-    availability_zone = "ap-northeast-1c"
-    cidr_block        = "10.0.2.0/24"
-
-    tags = {
-        AZ = "1c"
-    }
-}
-
-
-resource "aws_subnet" "ap-northeast-1d" {
-    vpc_id            = aws_vpc.myvpc.id
-    map_public_ip_on_launch = true
-    availability_zone = "ap-northeast-1d"
-    cidr_block        = "10.0.3.0/24"
-
-    tags = {
-        AZ = "1d"
-    }
-}
-
-
-resource "aws_db_subnet_group" "subnetGroup" {
-    name       = "main"
-
-    subnet_ids = [
-        aws_subnet.ap-northeast-1a.id,
-        aws_subnet.ap-northeast-1c.id,
-        aws_subnet.ap-northeast-1d.id
-    ]
-
-    tags = {
-        Stage = var.stage
-        Name = "My DB subnet group"
-    }
-}
-
 
 resource "aws_security_group" "rds" {
     name        = "imbee_rds_security_group"
@@ -105,7 +41,7 @@ resource "aws_security_group" "rds" {
 
 resource "aws_db_parameter_group" "imbee_group" {
   name   = "imbee-notification-group"
-  family = "mysql5.7"
+  family = "mysql8.0"
 
   parameter {
     name  = "character_set_server"
@@ -122,8 +58,9 @@ resource "aws_db_instance" "imbee_db" {
     allocated_storage    = 10
     max_allocated_storage = 20
     db_name              = var.db_name
+    identifier           = var.db_name
     engine               = "mysql"
-    engine_version       = "5.7.40"
+    engine_version       = "8.0.28"
     instance_class       = "db.t3.micro"
     username             = var.db_username
     password             = var.db_password
@@ -131,12 +68,12 @@ resource "aws_db_instance" "imbee_db" {
     # when use replica that have to set a backup
     backup_retention_period   = 1
     # for hw test
-    publicly_accessible  = true
+    publicly_accessible       = true
     vpc_security_group_ids    = ["${aws_security_group.rds.id}"]
 
     skip_final_snapshot  = true
     parameter_group_name = aws_db_parameter_group.imbee_group.name
-    db_subnet_group_name = aws_db_subnet_group.subnetGroup.name
+    db_subnet_group_name = aws_db_subnet_group.subnet_group.name
 }
 
 

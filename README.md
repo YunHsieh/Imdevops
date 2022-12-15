@@ -17,7 +17,7 @@ npm install -g serverless
 Start the whole project's script
 ```
 terraform init
-echo yes | terraform apply
+echo 'yes' | terraform apply
 cd ./src
 ./devops/build-ecr.sh
 ./devops/merge.sh
