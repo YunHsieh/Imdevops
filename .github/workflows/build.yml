@@ -12,36 +12,53 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - name: Set up python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-          cache: 'pip'
+      - uses: Gr1N/setup-poetry@v7
+        with:
+          poetry-version: 1.2.2
+      - name: Intall package
+        working-directory: ./src
         run: |
-          cd src && pip intall poetry=="1.2.2"
-          poetry config virtualenvs.create false
-          poetry install --no-root
-          echo "run CI test"
+          poetry install
+          echo "run python test"
 
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
     needs: [test]
-    run: cd src && ./devops/build-ecr.sh
+    steps:
+      - name: Run Build ECR
+        run: bash ./devops/build-ecr.sh
 
   merge:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
     needs: [build]
-    run: cd src && ./devops/merge.sh
+    steps:
+      - name: Migrate Database
+        run: bash ./devops/merge.sh
 
   deploy:
     name: deploy
     needs: [build]
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
     strategy:
       matrix:
         node-version: [16.x]

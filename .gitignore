@@ -1,6 +1,7 @@
 *.hcl
 *.backup
 *.tfstate
+.terraform/
 .serverless
 node_modules
 # Byte-compiled / optimized / DLL files
