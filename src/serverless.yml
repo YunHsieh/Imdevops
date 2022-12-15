@@ -31,13 +31,12 @@ package:
   patterns:
      - '**'
 
-
 provider:
   name: aws
-  stage: ${env:STAGE, 'dev'}
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'ap-northeast-1'}
   deploymentBucket:
-    name: 'imbee-notification'
-  region: ap-northeast-1
+    name: imbee-notification-${opt:stage, 'dev'}
   architecture: arm64
   runtime: python3.9
   timeout: 30
@@ -46,21 +45,24 @@ functions:
   imbee:
     image: ${ssm:/imbee/infra/notification-ecr}:latest
     architecture: arm64
-
+    role: ${ssm:/imbee/infra/imbee_lambda_role}
     environment:
-      APP_NAME: 'imbee-image-services'
+      APP_NAME: 'imbee-image-services-${opt:stage, "dev"}'
       DATABASE_URL: ${ssm:/imbee/infra/database-url}
       DATABASE_NAME: ${ssm:/imbee/infra/database-name}
       DATABASE_PASSWORD: ${ssm:/imbee/infra/database-password}
       DATABASE_USERNAME: ${ssm:/imbee/infra/database-username}
+      DATABASE_URI: ${ssm:/imbee/infra/database-uri}
+      SQS_NOTIFICATION_DONE_URL: !Ref ImbeeNotificationDoneFifo
     # reservedConcurrency: 5
-    vpc:
-      securityGroupIds:
-        - ${ssm:/imbee/infra/security_group_id}
-      subnetIds:
-        - ${ssm:/imbee/infra/subnet-1}
-        - ${ssm:/imbee/infra/subnet-2}
-        - ${ssm:/imbee/infra/subnet-3}
+    # It needs to setting the NAT network to connect other services, be like: S3, SQS...etc
+    # vpc:
+    #   securityGroupIds:
+    #     - ${ssm:/imbee/infra/security_group_id}
+    #   subnetIds:
+    #     - ${ssm:/imbee/infra/subnet-1}
+    #     - ${ssm:/imbee/infra/subnet-2}
+    #     - ${ssm:/imbee/infra/subnet-3}
 
     events:
       - sqs:
