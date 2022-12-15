@@ -10,17 +10,40 @@ System recommand MacOS
 - [awscliv2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [npm](https://nodejs.org/en/download/)
 - [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+
+Intsall if you don't have yet
 ```
 npm install -g serverless
 ```
 
-Start the whole project's script
+When you first time to start it.
 ```
-terraform init
-echo 'yes' | terraform apply
-cd ./src
-./devops/build-ecr.sh
-./devops/merge.sh
-sls deploy
-cd ..
+./setup.sh
+```
+
+How to test
+```bash
+1. Go to aws console
+2. Search SQS
+3. Entry the sqs service
+4. Find "imbee-notification-fcm.fifo" sqs and click it
+5. Click "Send and receive messages"
+6. send a message as below sample:
+# ---
+# mock firebase success
+{
+   "status": "success"
+}
+# mock firebase timeout error
+{
+   "status": "timeout"
+}
+# mock firebase excced error
+{
+   "status": "excced"
+}
+# ---
+
+7. Go to the SQS find the 'imbee-notification-done-fcm.fifo' check the message
+
 ```
