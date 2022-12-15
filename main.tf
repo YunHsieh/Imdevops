@@ -23,6 +23,7 @@ resource "aws_security_group" "rds" {
     ingress {
         from_port       = 3306
         to_port         = 3306
+        cidr_blocks     = ["0.0.0.0/0"]
         protocol        = "tcp"
     }
     # Allow all outbound traffic.
@@ -40,30 +41,30 @@ resource "aws_security_group" "rds" {
 
 
 resource "aws_db_parameter_group" "imbee_group" {
-  name   = "imbee-notification-group"
-  family = "mysql8.0"
+    name   = "imbee-notification-group"
+    family = "mysql8.0"
 
-  parameter {
-    name  = "character_set_server"
-    value = "utf8"
-  }
+    parameter {
+        name  = "character_set_server"
+        value = "utf8"
+    }
 
-  lifecycle {
-    create_before_destroy = true
-  }
+    lifecycle {
+        create_before_destroy = true
+    }
 }
 
 
 resource "aws_db_instance" "imbee_db" {
-    allocated_storage    = 10
+    allocated_storage     = 10
     max_allocated_storage = 20
-    db_name              = var.db_name
-    identifier           = var.db_name
-    engine               = "mysql"
-    engine_version       = "8.0.28"
-    instance_class       = "db.t3.micro"
-    username             = var.db_username
-    password             = var.db_password
+    db_name               = var.db_name
+    identifier            = var.db_name
+    engine                = "mysql"
+    engine_version        = "8.0.28"
+    instance_class        = "db.t3.micro"
+    username              = var.db_username
+    password              = var.db_password
 
     # when use replica that have to set a backup
     backup_retention_period   = 1
@@ -79,14 +80,14 @@ resource "aws_db_instance" "imbee_db" {
 
 # set replica for HA (High Availability)
 resource "aws_db_instance" "imbee_db_replica" {
-   identifier             = "imbee-db-replica"
-   replicate_source_db    = aws_db_instance.imbee_db.identifier
-   instance_class         = "db.t3.micro"
-   apply_immediately      = true
-   publicly_accessible    = true
-   skip_final_snapshot    = true
-   vpc_security_group_ids    = ["${aws_security_group.rds.id}"]
-   parameter_group_name   = aws_db_parameter_group.imbee_group.name
+    identifier             = "imbee-db-replica"
+    replicate_source_db    = aws_db_instance.imbee_db.identifier
+    instance_class         = "db.t3.micro"
+    apply_immediately      = true
+    publicly_accessible    = true
+    skip_final_snapshot    = true
+    vpc_security_group_ids = ["${aws_security_group.rds.id}"]
+    parameter_group_name   = aws_db_parameter_group.imbee_group.name
 }
 
 

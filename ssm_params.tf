@@ -8,6 +8,15 @@ resource "aws_ssm_parameter" "notification_ecr" {
     }
 }
 
+resource "aws_ssm_parameter" "database_uri" {
+    name  = "/imbee/infra/database-uri"
+    type  = "String"
+    value = "mysql://${aws_db_instance.imbee_db.username}:${var.db_password}@${aws_db_instance.imbee_db.endpoint}/${aws_db_instance.imbee_db.db_name}"
+
+    tags = {
+        name = "imbee"
+    }
+}
 
 resource "aws_ssm_parameter" "database_url" {
     name  = "/imbee/infra/database-url"
@@ -34,7 +43,7 @@ resource "aws_ssm_parameter" "database_username" {
 resource "aws_ssm_parameter" "database_password" {
     name  = "/imbee/infra/database-password"
     type  = "SecureString"
-    value = "imbeepw1"
+    value = var.db_password
 
     tags = {
         name = "imbee"
@@ -90,6 +99,17 @@ resource "aws_ssm_parameter" "security_group" {
     name  = "/imbee/infra/security_group_id"
     type  = "String"
     value = aws_security_group.rds.id
+
+    tags = {
+        name = "imbee"
+    }
+}
+
+
+resource "aws_ssm_parameter" "imbee_lambda_role" {
+    name  = "/imbee/infra/imbee_lambda_role"
+    type  = "String"
+    value = aws_iam_role.imbee_lambda_developer.arn
 
     tags = {
         name = "imbee"

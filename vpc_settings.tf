@@ -7,7 +7,7 @@ resource "aws_vpc" "myvpc" {
 
 
 resource "aws_internet_gateway" "internet" {
-  vpc_id = aws_vpc.myvpc.id
+    vpc_id = aws_vpc.myvpc.id
 }
 
 
@@ -63,14 +63,19 @@ resource "aws_db_subnet_group" "subnet_group" {
 }
 
 resource "aws_route_table" "rds_route" {
-  vpc_id = aws_vpc.myvpc.id
+    vpc_id = aws_vpc.myvpc.id
 
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.internet.id
-  }
+    route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = aws_internet_gateway.internet.id
+    }
 
-  tags = {
-    Name = "net"
-  }
+    tags = {
+        Name = "RDS mysql internet"
+    }
+}
+
+resource "aws_main_route_table_association" "route_main" {
+    vpc_id         = aws_vpc.myvpc.id
+    route_table_id = aws_route_table.rds_route.id
 }
