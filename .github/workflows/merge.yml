@@ -1,4 +1,4 @@
-name: Imbee-Notification-Build-Container
+name: Imbee-Notification-Migrate
 
 on: 
   push:
@@ -7,12 +7,11 @@ on:
     branches: [ ManualTrigger ]
 
 jobs:
-  build:
+  merge:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./src
-    needs: [test]
     steps:
-      - name: Run Build ECR
-        run: bash ./devops/build-ecr.sh
+      - name: Migrate Database
+        run: bash ./devops/merge.sh
