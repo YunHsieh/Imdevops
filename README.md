@@ -12,12 +12,15 @@ System recommand MacOS
 - [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 
 Intsall if you don't have yet
-```
+```bash
 npm install -g serverless
 ```
 
 When you first time to start it.
-```
+```bash
+# Give sh run permission if you needed
+chmod 755 ./setup.sh ./src/devops/build-ecr.sh ./src/devops/merge.sh
+
 ./setup.sh
 ```
 
