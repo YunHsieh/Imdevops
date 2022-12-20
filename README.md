@@ -50,3 +50,8 @@ How to test
 7. Go to the SQS find the 'imbee-notification-done-fcm.fifo' check the message
 
 ```
+
+## Cloud Architecture Diagram
+
+![image](https://user-images.githubusercontent.com/52973591/208701218-ac726d98-2f69-4028-ba4a-9514c7b59d74.png)
+
